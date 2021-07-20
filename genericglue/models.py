@@ -8,7 +8,7 @@ class SingleGFK(models.Model):
     An abstract base model to simplify the creation of models with a GFK'd
     "object" relationship.
     """
-    object_type = models.ForeignKey(ContentType, related_name="related_%(class)s")
+    object_type = models.ForeignKey(ContentType, related_name="related_%(class)s", on_delete=models.CASCADE)
     object_id = models.IntegerField(db_index=True)
     object = generic.GenericForeignKey(ct_field="object_type", fk_field="object_id")
 
@@ -24,7 +24,7 @@ class DualGfk(SingleGFK):
     An abstract base model to simplify the creation of models with dual-ended
     GFKs.
     """
-    parent_type = models.ForeignKey(ContentType, related_name="child_%(class)s")
+    parent_type = models.ForeignKey(ContentType, related_name="child_%(class)s", on_delete=models.CASCADE)
     parent_id = models.IntegerField(db_index=True)
     parent = generic.GenericForeignKey(ct_field="parent_type", fk_field="parent_id")
     dnorm_parent = models.CharField(max_length=200)
