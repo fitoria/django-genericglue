@@ -1,11 +1,11 @@
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes import fields as generic
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
 
 class SingleGFK(models.Model):
     """
-    An abstract base model to simplify the creation of models with a GFK'd 
+    An abstract base model to simplify the creation of models with a GFK'd
     "object" relationship.
     """
     object_type = models.ForeignKey(ContentType, related_name="related_%(class)s")
@@ -40,10 +40,10 @@ class DualGfk(SingleGFK):
 class GenericglueRelation(generic.GenericRelation):
     """
     A simple override of Django's GenericRelation class to assume the default field names DualGfk uses.
-    
+
     """
     def __init__(self, model, **kwargs):
         defaults = dict(object_id_field="parent_id", content_type_field="parent_type")
         defaults.update(kwargs)
         return super(GenericglueRelation, self).__init__(model, **defaults)
-    
+
