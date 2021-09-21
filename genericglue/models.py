@@ -16,7 +16,7 @@ class SingleGFK(models.Model):
         abstract = True
 
     def __unicode__(self):
-        return u"%s - %s" % (self.object_type, self.object)
+        return "%s - %s" % (self.object_type, self.object)
 
 
 class DualGfk(SingleGFK):

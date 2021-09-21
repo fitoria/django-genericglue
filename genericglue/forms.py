@@ -22,7 +22,7 @@ class ContentTypeChoiceIterator(object):
         #self.ctype_choices = []
 
     def __iter__(self):
-        yield (u"", u"---------") # initial empty choice
+        yield ("", "---------") # initial empty choice
         for choice in self.ctype_choices:
             yield choice
 
@@ -33,11 +33,11 @@ class GenericRawIdWidget(forms.TextInput):
     necessary object-selection popup.
 
     """
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         if attrs is None:
             attrs = {}
         attrs['class'] = 'vGenericRawIdField' # The JS looks for this class name.
-        output_str = u'&nbsp;&nbsp;%s<a href="#" id="lookup_id_%s" class="related-lookup" onclick="return showGenericRelatedObjectLookupPopup(this);">&nbsp;<img src="%simg/admin/selector-search.gif" alt="Lookup" height="16" width="16" /></a>'
+        output_str = '&nbsp;&nbsp;%s<a href="#" id="lookup_id_%s" class="related-lookup" onclick="return showGenericRelatedObjectLookupPopup(this);">&nbsp;<img src="%simg/admin/selector-search.gif" alt="Lookup" height="16" width="16" /></a>'
         return mark_safe(output_str % (super(GenericRawIdWidget, self).render(name, value, attrs),
                                        name,
                                        settings.ADMIN_MEDIA_PREFIX))
@@ -58,7 +58,7 @@ class GenericForeignKeyWidget(forms.MultiWidget):
         super(GenericForeignKeyWidget, self).__init__(widgets=(forms.Select(choices=ContentTypeChoiceIterator(queryset=queryset)),
                                                                GenericRawIdWidget))
 
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         output = super(GenericForeignKeyWidget, self).render(name, value, attrs)
         obj_repr = self.get_repr(value)
         return obj_repr and mark_safe("%s %s"% (output, self.get_repr(value))) or mark_safe(output)
@@ -84,7 +84,7 @@ class GenericForeignKeyWidget(forms.MultiWidget):
         """
         if isinstance(value, (list, tuple)) and (value[0] and value[1]):
             value = ContentType.objects.get(pk=value[0]).get_object_for_this_type(pk=value[1])
-            return u"&nbsp;<strong>%s</strong>" % unicode(value)
+            return "&nbsp;<strong>%s</strong>" % str(value)
         return None
 
 
@@ -118,7 +118,7 @@ class GenericForeignKeyField(forms.MultiValueField):
             # duplicating a large amount of code, and clean() ends up
             # calling this method anyway.
             #
-            raise forms.ValidationError(u"Please select a valid object")
+            raise forms.ValidationError("Please select a valid object")
         return (ctype, object_id)
 
 
