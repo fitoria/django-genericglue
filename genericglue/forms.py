@@ -33,14 +33,16 @@ class GenericRawIdWidget(forms.TextInput):
     necessary object-selection popup.
 
     """
-    def render(self, name, value, attrs=None, renderer=None):
-        if attrs is None:
-            attrs = {}
-        attrs['class'] = 'vGenericRawIdField' # The JS looks for this class name.
-        output_str = '&nbsp;&nbsp;%s<a href="#" id="lookup_id_%s" class="related-lookup" onclick="return showGenericRelatedObjectLookupPopup(this);">&nbsp;<img src="%simg/admin/selector-search.gif" alt="Lookup" height="16" width="16" /></a>'
-        return mark_safe(output_str % (super(GenericRawIdWidget, self).render(name, value, attrs),
-                                       name,
-                                       settings.ADMIN_MEDIA_PREFIX))
+    template_name = 'genericglue/foreign_key_raw_id.html'
+
+    #def render(self, name, value, attrs=None, renderer=None):
+    #    if attrs is None:
+    #        attrs = {}
+    #    attrs['class'] = 'vGenericRawIdField' # The JS looks for this class name.
+    #    output_str = '&nbsp;&nbsp;%s<a href="#" id="lookup_id_%s" class="related-lookup" onclick="return showGenericRelatedObjectLookupPopup(this);">&nbsp;<img src="%simg/admin/selector-search.gif" alt="Lookup" height="16" width="16" /></a>'
+    #    return mark_safe(output_str % (super(GenericRawIdWidget, self).render(name, value, attrs),
+    #                                   name,
+    #                                   settings.ADMIN_MEDIA_PREFIX))
 
     class Media:
         js = [
@@ -59,7 +61,7 @@ class GenericForeignKeyWidget(forms.MultiWidget):
                                                                GenericRawIdWidget))
 
     def render(self, name, value, attrs=None, renderer=None):
-        output = super(GenericForeignKeyWidget, self).render(name, value, attrs)
+        output = super(GenericForeignKeyWidget, self).render(name, value, attrs, renderer)
         obj_repr = self.get_repr(value)
         return obj_repr and mark_safe("%s %s"% (output, self.get_repr(value))) or mark_safe(output)
 
