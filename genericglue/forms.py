@@ -7,7 +7,15 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils.safestring import mark_safe
 from genericglue.utils import table_exists
 
-class ContentTypeChoiceIterator(object):
+try:
+    # Django >= 5.0 eagerly normalizes widget choices, iterating anything that
+    # isn't recognised as a lazy iterator. Subclassing this is what tells
+    # normalize_choices() to leave us alone until render time.
+    from django.utils.choices import BaseChoiceIterator
+except ImportError:  # Django < 5.0 normalized nothing; plain object is fine.
+    BaseChoiceIterator = object
+
+class ContentTypeChoiceIterator(BaseChoiceIterator):
     """
     A class which generates choices for content-type select fields
     a single time and caches them.
