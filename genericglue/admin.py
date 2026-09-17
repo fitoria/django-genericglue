@@ -11,10 +11,11 @@ if table_exists(ContentType._meta.db_table):
     #MODEL_IDS_WITH_PERMALINKS = [ct.id for ct in MODELS_WITH_PERMALINKS]
     MODELS_WITH_PERMALINKS = []
     MODEL_IDS_WITH_PERMALINKS = []
+    QUERYSET = ContentType.objects.filter(pk__in=MODEL_IDS_WITH_PERMALINKS)
 else:
     MODELS_WITH_PERMALINKS = []
     MODEL_IDS_WITH_PERMALINKS = []
-
+    QUERYSET = None
 
 class WithGenericObjectForm(forms.ModelForm):
     """
@@ -34,7 +35,7 @@ class WithGenericObjectForm(forms.ModelForm):
         object = GenericForeignKeyField(required=True, queryset=ContentType.objects.all())
 
     """
-    object = GenericForeignKeyField(required=True, queryset=ContentType.objects.filter(pk__in=MODEL_IDS_WITH_PERMALINKS))
+    object = GenericForeignKeyField(required=True, queryset=QUERYSET)
 
     def __init__(self, *args, **kwargs):
         super(WithGenericObjectForm, self).__init__(*args, **kwargs)

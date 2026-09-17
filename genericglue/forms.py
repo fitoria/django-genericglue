@@ -5,6 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.safestring import mark_safe
+from genericglue.utils import table_exists
 
 class ContentTypeChoiceIterator(object):
     """
@@ -17,9 +18,12 @@ class ContentTypeChoiceIterator(object):
 
     """
     def __init__(self, queryset=None):
-        self.queryset = queryset or ContentType.objects.all()
-        self.ctype_choices = [(ctype.id, "%s | %s" % (ctype.app_label, ctype.model)) for ctype in self.queryset.order_by('app_label', 'model')]
-        #self.ctype_choices = []
+        if table_exists(ContentType._meta.db_table):
+            self.queryset = queryset or ContentType.objects.all()
+            self.ctype_choices = [(ctype.id, "%s | %s" % (ctype.app_label, ctype.model)) for ctype in self.queryset.order_by('app_label', 'model')]
+        else:
+            self.queryset = [] 
+            self.ctype_choices = []
 
     def __iter__(self):
         yield ("", "---------") # initial empty choice
