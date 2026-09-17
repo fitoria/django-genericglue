@@ -2,20 +2,17 @@ from django import forms
 from django.contrib.contenttypes.models import ContentType
 from django.apps import apps
 from genericglue.forms import GenericForeignKeyField
-from genericglue.utils import table_exists
 
 
-if table_exists(ContentType._meta.db_table):
-    #HACK temporal
-    #MODELS_WITH_PERMALINKS = [ContentType.objects.get_for_model(model) for model in apps.get_models() if getattr(model, 'get_absolute_url', None)]
-    #MODEL_IDS_WITH_PERMALINKS = [ct.id for ct in MODELS_WITH_PERMALINKS]
-    MODELS_WITH_PERMALINKS = []
-    MODEL_IDS_WITH_PERMALINKS = []
-    QUERYSET = ContentType.objects.filter(pk__in=MODEL_IDS_WITH_PERMALINKS)
-else:
-    MODELS_WITH_PERMALINKS = []
-    MODEL_IDS_WITH_PERMALINKS = []
-    QUERYSET = None
+# No table_exists() check here. Both branches of the old conditional ended up
+# equivalent: MODEL_IDS_WITH_PERMALINKS is empty either way, and every consumer
+# does `queryset or ContentType.objects.all()`, for which an empty queryset and
+# None behave identically. The check only cost a full pg_catalog table listing
+# during django.setup().
+MODELS_WITH_PERMALINKS = []
+MODEL_IDS_WITH_PERMALINKS = []
+QUERYSET = None
+
 
 class WithGenericObjectForm(forms.ModelForm):
     """

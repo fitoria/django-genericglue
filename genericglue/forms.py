@@ -18,12 +18,24 @@ class ContentTypeChoiceIterator(object):
 
     """
     def __init__(self, queryset=None):
-        if table_exists(ContentType._meta.db_table):
-            self.queryset = queryset or ContentType.objects.all()
-            self.ctype_choices = [(ctype.id, "%s | %s" % (ctype.app_label, ctype.model)) for ctype in self.queryset.order_by('app_label', 'model')]
-        else:
-            self.queryset = [] 
-            self.ctype_choices = []
+        # Nothing touches the database here. Widgets are built in class bodies
+        # (see genericglue/admin.py), so querying in __init__ meant a table
+        # listing plus a content-type fetch during django.setup().
+        self.queryset = queryset
+        self._ctype_choices = None
+
+    @property
+    def ctype_choices(self):
+        if self._ctype_choices is None:
+            if table_exists(ContentType._meta.db_table):
+                queryset = self.queryset or ContentType.objects.all()
+                self._ctype_choices = [
+                    (ctype.id, "%s | %s" % (ctype.app_label, ctype.model))
+                    for ctype in queryset.order_by('app_label', 'model')
+                ]
+            else:
+                self._ctype_choices = []
+        return self._ctype_choices
 
     def __iter__(self):
         yield ("", "---------") # initial empty choice
@@ -60,7 +72,7 @@ class GenericForeignKeyWidget(forms.MultiWidget):
     A combined widget for object-type and object-id selection in a generic FK.
 
     """
-    def __init__(self, attrs=None, queryset=ContentType.objects.all()):
+    def __init__(self, attrs=None, queryset=None):
         super(GenericForeignKeyWidget, self).__init__(widgets=(forms.Select(choices=ContentTypeChoiceIterator(queryset=queryset)),
                                                                GenericRawIdWidget))
 
@@ -102,7 +114,8 @@ class GenericForeignKeyField(forms.MultiValueField):
 
     """
     def __init__(self, queryset=None, *args, **kwargs):
-        queryset = queryset or ContentType.objects.all()
+        if queryset is None:
+            queryset = ContentType.objects.all()
         super(GenericForeignKeyField, self).__init__(fields=(forms.ModelChoiceField(queryset=queryset),
                                                              forms.IntegerField()), widget=GenericForeignKeyWidget(queryset=queryset), *args, **kwargs)
 
